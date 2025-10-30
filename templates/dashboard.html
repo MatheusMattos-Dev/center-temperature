@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow border">
+    <h2 class="font-semibold mb-3">Última foto</h2>
+    {% if last %}
+      <div class="flex items-start gap-4">
+        <img class="rounded-lg border max-h-[360px]" src="/img/{{ last['filename'] }}" alt="Última foto">
+        <div class="text-sm space-y-2">
+          <p><b>Data</b>: {{ last['taken_at'] }}</p>
+          <p><b>Dimensões</b>: {{ last['width'] }}×{{ last['height'] }}</p>
+          <p><b>Dispositivo</b>: {{ last['device_model'] or "—" }}</p>
+          <p><b>OCR</b>:
+            Temp = {{ last['ocr_temp_c'] if last['ocr_temp_c'] is not none else "—" }} °C,
+            Umid = {{ last['ocr_humidity'] if last['ocr_humidity'] is not none else "—" }} %
+          </p>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-slate-600">Nenhuma foto enviada ainda.</p>
+    {% endif %}
+  </div>
+
+  <div class="bg-white p-4 rounded-xl shadow border">
+    <h2 class="font-semibold mb-3">Histórico (gráfico)</h2>
+    <canvas id="chart" height="260"></canvas>
+    <script>
+      const labels = [{% for r in series %}"{{ r['taken_at'] }}",{% endfor %}];
+      const temps  = [{% for r in series %}{{ r['ocr_temp_c'] if r['ocr_temp_c'] is not none else 'null' }},{% endfor %}];
+      const hums   = [{% for r in series %}{{ r['ocr_humidity'] if r['ocr_humidity'] is not none else 'null' }},{% endfor %}];
+
+      new Chart(document.getElementById('chart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Temp (°C)', data: temps, borderWidth: 2 },
+            { label: 'Umid (%)', data: hums, borderWidth: 2 },
+          ]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+    </script>
+  </div>
+</div>
+
+<div class="mt-6 bg-white p-4 rounded-xl shadow border overflow-x-auto">
+  <h2 class="font-semibold mb-3">Uploads recentes</h2>
+  <table class="text-sm w-full">
+    <thead>
+      <tr class="text-left border-b">
+        <th class="py-2">Data</th>
+        <th>Arquivo</th>
+        <th>Temp OCR</th>
+        <th>Umid OCR</th>
+        <th>Dispositivo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in table %}
+      <tr class="border-b last:border-0">
+        <td class="py-2">{{ r['taken_at'] }}</td>
+        <td><a class="text-blue-600 hover:underline" href="/img/{{ r['filename'] }}">{{ r['filename'] }}</a></td>
+        <td>{{ r['ocr_temp_c'] if r['ocr_temp_c'] is not none else "—" }}</td>
+        <td>{{ r['ocr_humidity'] if r['ocr_humidity'] is not none else "—" }}</td>
+        <td>{{ r['device_model'] or "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

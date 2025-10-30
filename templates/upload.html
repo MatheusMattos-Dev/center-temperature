@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-xl font-semibold mb-3">Enviar foto do Data Center</h2>
+<form action="/upload" method="post" enctype="multipart/form-data" class="bg-white p-4 rounded-xl shadow border space-y-3">
+  <p class="text-sm text-slate-600">No celular, este botão já abre a câmera traseira.</p>
+  <input class="block" type="file" name="photo" accept="image/*" capture="environment" required>
+  <button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enviar</button>
+</form>
+{% endblock %}
